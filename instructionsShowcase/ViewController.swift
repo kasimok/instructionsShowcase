@@ -85,8 +85,16 @@ extension ViewController: OMWindowWatcherDelegate,NSWindowDelegate{
     func windowDidDisappearFromScreen() {
         debugPrint("die")
         self.omInstructions?.close()
+        self.watcher.stopWatch()
+
     }
     
+    
+    func windowDidBecomeInactive() {
+        debugPrint("inactive")
+        self.omInstructions?.close()
+        self.watcher.stopWatch()
+    }
 }
 
 

@@ -1,9 +1,11 @@
 import Foundation
+import AppKit
 
 protocol OMWindowWatcherDelegate: AnyObject{
     func windowDidAppearOnScreen(windowInfo: WindowInfo)
     func windowDidMoved(windowInfo: WindowInfo)
     func windowDidDisappearFromScreen()
+    func windowDidBecomeInactive()
 }
 
 
@@ -11,13 +13,24 @@ protocol OMWindowWatcherDelegate: AnyObject{
 class OMWindowWatcher: NSObject{
     /// target window size
     var windowSize: CGSize?
+    /// window's owner name, localized string
     var windowOwnerName: String?
+    /// window  name, for most window this is nil
     var windowName: String?
+    
     var timer: Timer?
+    
     weak var delegate: OMWindowWatcherDelegate?
+    
     var onScreen: Bool = false
+    
     var windowInfo: WindowInfo?
-    var stopOnFirstDisappear = true
+    
+    var stopWatchOnFirstDisappear = true
+    
+    var timerUpdateInterval = 0.02
+    
+    var frontAndActive: Bool = false
     
     init(windowSize: CGSize?, windowOwnerName: String? = nil, windowName: String? = nil) {
         self.windowSize = windowSize
@@ -28,7 +41,7 @@ class OMWindowWatcher: NSObject{
     
     func startWatch(){
         timer?.invalidate()
-        timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(checkWindow), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: timerUpdateInterval, target: self, selector: #selector(checkWindow), userInfo: nil, repeats: true)
     }
     
     func stopWatch(){
@@ -46,12 +59,19 @@ class OMWindowWatcher: NSObject{
                     delegate?.windowDidMoved(windowInfo: windowInfo)
                 }
             }
+            
+            if let app = NSRunningApplication(processIdentifier: windowInfo.ownerPid){
+                if !app.isActive{
+                    delegate?.windowDidBecomeInactive()
+                }
+            }
+            
         }else{
             if onScreen == true{
                 onScreen = false
                 delegate?.windowDidDisappearFromScreen()
                 windowInfo = nil
-                if stopOnFirstDisappear {timer?.invalidate()}
+                if stopWatchOnFirstDisappear {timer?.invalidate()}
             }
         }
         

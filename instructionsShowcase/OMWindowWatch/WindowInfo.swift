@@ -34,6 +34,7 @@ struct WindowInfo{
     var ownerName = ""
     var layer: Int32 = 0
     var frame = NSRect.zero
+    var ownerPid: Int32
 
     private var directDisplayID: CGDirectDisplayID?
     private let mainDisplayBounds = CGDisplayBounds(CGMainDisplayID())
@@ -54,6 +55,7 @@ struct WindowInfo{
         windowName = item[kCGWindowName as String] as? String ?? ""
         ownerName = item[kCGWindowOwnerName as String] as? String ?? ""
         layer = (item[kCGWindowLayer as String] as! NSNumber).int32Value
+        ownerPid = (item[kCGWindowOwnerPID as String] as! NSNumber).int32Value
         let bounds = item[kCGWindowBounds as String] as! Dictionary<String, CGFloat>
         
         let cgFrame = NSRect(
